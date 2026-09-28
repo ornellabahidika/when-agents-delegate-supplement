@@ -1,0 +1,202 @@
+[
+  {
+    "order_index": 1,
+    "artifact": "OpenAI Agents SDK",
+    "condition": "C3",
+    "verdict": "partial",
+    "quote_or_search": "\"Handoffs are wrapped in `handoff_span()`\"; \"Handoffs are represented as tools to the LLM. So if there's a handoff to an agent named `Refund Agent`, the tool would be named `transfer_to_refund_agent`.\"; \"`input_type`: The schema for the handoff tool-call arguments. When set, the parsed payload is passed to `on_handoff`.\"",
+    "rationale": "Every handoff produces a typed tool call and, when tracing is on, a dedicated handoff span identifying source and target agents; but tracing is disableable, structured handoff payloads (goal) are opt-in via input_type, and no scope field exists, so the typed delegation record is not a mandatory always-on guarantee."
+  },
+  {
+    "order_index": 2,
+    "artifact": "MCP",
+    "condition": "C5",
+    "verdict": "absent",
+    "quote_or_search": "Searched the 2026-07-28 authorization spec, architecture page, spec index, and 2025-06-18 security best practices for 'depth', hop limits, delegation limits, or admissible-delegate lists; nothing found. Closest text, 'MCP servers MUST NOT accept or transit any other tokens', constrains token reuse per hop, not chain depth or breadth.",
+    "rationale": "No provision anywhere in the fetched MCP specification pages places explicit limits on delegation depth or on which downstream servers/agents may be engaged; grants carry no depth or diameter parameters."
+  },
+  {
+    "order_index": 3,
+    "artifact": "A2A",
+    "condition": "C1",
+    "verdict": "partial",
+    "quote_or_search": "\"clients MUST authenticate requests using one of the schemes declared in the public `AgentCard.securitySchemes`\"; \"Servers MUST return an authorization error when the authenticated client lacks required permissions.\"; \"If an agent needs additional credentials to access a different system or service during a task...the client is responsible for obtaining these secondary credentials through a process outside of the A2A protocol itself (for example, an OAuth flow)\"; \"specific OAuth scopes **should** grant an authenticated client access to invoke certain skills but not others\"",
+    "rationale": "A2A mandates per-hop authentication and authorization, but credentials for onward delegation are acquired out-of-band and independently; nothing derives or attenuates a delegate's scope from the delegator's grant, and skill-level scoping is only SHOULD-level guidance. Single-hop enforcement without chain-wide conservation is partial."
+  },
+  {
+    "order_index": 4,
+    "artifact": "LangGraph",
+    "condition": "C4",
+    "verdict": "partial",
+    "quote_or_search": "\"To trace, debug and evaluate your agents, use LangSmith.\"; \"Trace the full coordination flow across agents with LangSmith. Follow the tracing quickstart to get set up.\"; \"LangGraph saves checkpoints at super-step boundaries\"",
+    "rationale": "Full-run provenance is achievable via LangSmith tracing and via checkpointers, but both are opt-in application configuration (a checkpointer must be attached; LangSmith requires setup), and there is no mandatory framework mechanism that reconstructs a delegation tree from a single anchor query."
+  },
+  {
+    "order_index": 5,
+    "artifact": "AutoGen",
+    "condition": "C2",
+    "verdict": "partial",
+    "quote_or_search": "\"The UserProxyAgent is a special built-in agent that acts as a proxy for a user to provide feedback to the team.\"; \"when agents handoff to \\\"user\\\", the team execution will stop and wait for the user to input a response\"",
+    "rationale": "AutoGen offers explicit human-participation constructs (UserProxyAgent, handoff to 'user', HandoffTermination), but they are optional components the developer must add; nothing requires that a team anchor to an identified accountable natural person or that actions resolve to one."
+  },
+  {
+    "order_index": 6,
+    "artifact": "MCP",
+    "condition": "C2",
+    "verdict": "partial",
+    "quote_or_search": "\"Users must explicitly consent to and understand all data access and operations\"; \"Hosts must obtain explicit user consent before invoking any tool\"; \"While MCP itself cannot enforce these security principles at the protocol level, implementors **SHOULD**: 1. Build robust consent and authorization flows into their applications\"; architecture: the host \"Handles user authorization decisions\" and \"Enforces security policies and consent requirements\"",
+    "rationale": "MCP centers a human user (consent, host-mediated authorization), but the consent principles use lowercase 'must' outside BCP-14 capitalization, the spec itself states these principles cannot be enforced at protocol level and downgrades them to implementor SHOULDs, and they bind the host-user hop only, not a multi-hop chain back to an identified accountable person."
+  },
+  {
+    "order_index": 7,
+    "artifact": "OpenAI Agents SDK",
+    "condition": "C5",
+    "verdict": "partial",
+    "quote_or_search": "\"If we exceed the `max_turns` passed, we raise a MaxTurnsExceeded exception.\"; \"Pass `max_turns=None` to disable this turn limit.\"; \"All agents have a `handoffs` param\"",
+    "rationale": "A default turn limit exists and the runtime refuses to exceed it (MaxTurnsExceeded), and the per-agent handoffs list constrains admissible delegates; but the limit bounds loop turns rather than delegation depth, is a runner argument rather than part of the grant, and is explicitly disableable, so it is default-on-but-disableable and configuration-level."
+  },
+  {
+    "order_index": 8,
+    "artifact": "A2A",
+    "condition": "C4",
+    "verdict": "partial",
+    "quote_or_search": "\"use OpenTelemetry to propagate trace context, including trace IDs and span IDs, through standard HTTP headers\"; \"This enables end-to-end visibility for debugging and performance analysis\"; \"Audit significant events, such as task creation, critical state changes, and agent actions\"",
+    "rationale": "Chain-wide provenance is addressed only in the non-normative enterprise-ready guidance as recommended OpenTelemetry context propagation and audit logging; the core spec provides task/context IDs and optional referenceTaskIds but no mandatory mechanism by which one anchor query reconstructs the full delegation tree."
+  },
+  {
+    "order_index": 9,
+    "artifact": "LangGraph",
+    "condition": "C1",
+    "verdict": "partial",
+    "quote_or_search": "\"A main agent coordinates subagents as tools\"; \"Agents transfer control to each other via tool calls\". Searched the multi-agent and graph-api docs for scope/permission subsetting, credential attenuation, or enforcement that a subagent's tools are a subset of its caller's: nothing found.",
+    "rationale": "Each agent's tool set is chosen by the application, so a subset relationship can be constructed by configuration, but LangGraph provides no mechanism that derives or mechanically enforces a delegate's scope as a subset of the delegator's; a subagent can be given tools its caller lacks."
+  },
+  {
+    "order_index": 10,
+    "artifact": "AutoGen",
+    "condition": "C5",
+    "verdict": "partial",
+    "quote_or_search": "\"For AssistantAgent, you can set the `handoffs` argument to specify which agents it can hand off to\"; MaxMessageTermination \"Stops after a specified number of messages have been produced\"; \"a run can go on forever, and in many cases, we need to know when to stop them.\"",
+    "rationale": "The per-agent handoffs allowlist constrains admissible delegates and termination conditions can bound run length, but both are optional developer configuration: without a termination condition a run can go on forever, and no grant-carried delegation-depth limit exists that the runtime refuses to exceed."
+  },
+  {
+    "order_index": 11,
+    "artifact": "MCP",
+    "condition": "C4",
+    "verdict": "absent",
+    "quote_or_search": "Searched the authorization spec, security best practices, architecture, and spec index for provenance, audit trail, chain reconstruction, or delegation-tree queries. Audit appears only as risk narrative: token passthrough factors 'make incident investigation, controls, and auditing more difficult'. No reconstruction mechanism found.",
+    "rationale": "MCP defines no record structure or query by which the delegation tree from an origin can be reconstructed; audit and traceability are mentioned only as motivations for forbidding token passthrough, not as provided mechanisms."
+  },
+  {
+    "order_index": 12,
+    "artifact": "OpenAI Agents SDK",
+    "condition": "C1",
+    "verdict": "partial",
+    "quote_or_search": "\"When a handoff occurs, it's as though the new agent takes over the conversation, and gets to see the entire previous conversation history.\" The handoffs doc explicitly does not restrict the delegate's tools or scope relative to the delegator (searched for scope/permission subsetting: nothing found).",
+    "rationale": "Delegate agents carry their own independently configured tools, so a subset scope is achievable only by application-level configuration; the SDK enforces no derivation or attenuation from the delegator's grant, and handoffs actually widen access by passing full conversation history by default."
+  },
+  {
+    "order_index": 13,
+    "artifact": "A2A",
+    "condition": "C3",
+    "verdict": "partial",
+    "quote_or_search": "\"`referenceTaskIds`: A list of task IDs that this message references for additional context\"; \"`metadata`: A key/value object to store custom metadata about a task\"; \"Task IDs are server-generated when a new task is created\"",
+    "rationale": "A2A creates typed Task objects per delegation hop and offers optional fields (referenceTaskIds, metadata) that could name the delegating context, but nothing normatively requires recording delegator identity, goal, or scope in the delegation record; the fields exist but their delegation use is application-level."
+  },
+  {
+    "order_index": 14,
+    "artifact": "LangGraph",
+    "condition": "C3",
+    "verdict": "partial",
+    "quote_or_search": "\"Agents transfer control to each other via tool calls\"; \"A main agent coordinates subagents as tools\". Searched multi-agent doc for a required typed delegation record naming delegator, delegatee, goal, and scope: not specified.",
+    "rationale": "Handoffs and subagent calls are tool calls that land in message state, so a delegation event leaves a de facto record naming the target and payload; but the record's persistence depends on application state design (messages can be filtered, no checkpointer is required) and no typed schema captures delegator, goal, and scope."
+  },
+  {
+    "order_index": 15,
+    "artifact": "AutoGen",
+    "condition": "C1",
+    "verdict": "partial",
+    "quote_or_search": "\"let agent delegate tasks to other agents using a special tool call\"; \"For AssistantAgent, you can set the `handoffs` argument to specify which agents it can hand off to\". Searched swarm and teams docs for enforcement that a handoff target's tools are a subset of the source agent's: nothing found.",
+    "rationale": "Per-agent tool and handoff configuration lets an application construct attenuated scopes, but AutoGen enforces no relationship between a delegate's capabilities and the delegator's; a handoff target may hold tools and permissions the source agent never had."
+  },
+  {
+    "order_index": 16,
+    "artifact": "MCP",
+    "condition": "C1",
+    "verdict": "partial",
+    "quote_or_search": "\"MCP servers **MUST** validate that access tokens were issued specifically for them as the intended audience\"; \"MCP servers **MUST NOT** accept or transit any other tokens.\"; \"MCP servers **MUST NOT** accept any tokens that were not explicitly issued for the MCP server.\"; but \"Authorization is **OPTIONAL** for MCP implementations\" and least privilege is SHOULD: \"MCP clients **SHOULD** follow the principle of least privilege\"",
+    "rationale": "MCP imposes MUST-level audience binding at every hop and forbids token passthrough, which blocks unattenuated credential flow; however, each downstream hop obtains an independent OAuth grant whose scope is not derived from or mechanically bounded by the upstream grant, least-privilege scoping is SHOULD-level, and the entire authorization framework is optional. Not chain-wide conserved authorization."
+  },
+  {
+    "order_index": 17,
+    "artifact": "OpenAI Agents SDK",
+    "condition": "C4",
+    "verdict": "partial",
+    "quote_or_search": "\"Tracing is enabled by default.\"; \"Each time an agent runs, it is wrapped in `agent_span()`\"; \"Handoffs are wrapped in `handoff_span()`\"; \"You can globally disable tracing by setting the env var `OPENAI_AGENTS_DISABLE_TRACING=1`\"; \"Tracing is unavailable for organizations that use OpenAI's APIs under a Zero Data Retention (ZDR) policy.\"",
+    "rationale": "Default-on tracing captures the whole workflow including agent and handoff spans under a trace_id, which supports chain reconstruction; but it is disableable per-run and globally and is unavailable under ZDR, so provenance is default-on-but-disableable rather than a mandatory guarantee."
+  },
+  {
+    "order_index": 18,
+    "artifact": "A2A",
+    "condition": "C5",
+    "verdict": "absent",
+    "quote_or_search": "Searched the A2A 1.0.0 specification and the enterprise-ready topic for delegation depth limits, hop counts, or grant-carried delegate allowlists: nothing found. Skill-level scope guidance ('specific OAuth scopes should grant an authenticated client access to invoke certain skills but not others') restricts skill invocation, not delegation depth or onward delegates.",
+    "rationale": "A2A defines no limit on how deep or wide a delegation chain may grow and no grant parameter enumerating admissible delegates; onward delegation is entirely outside the protocol's view."
+  },
+  {
+    "order_index": 19,
+    "artifact": "LangGraph",
+    "condition": "C2",
+    "verdict": "partial",
+    "quote_or_search": "\"Interrupts allow you to pause graph execution at specific points and wait for external input before continuing.\"; \"To use interrupt(), you need: A checkpointer to persist the graph state\"",
+    "rationale": "Human oversight exists only as opt-in interrupt() calls the developer must place, with checkpointer prerequisites; nothing requires a chain to anchor to an identified accountable natural person, and no identity of the approving human is captured by the framework."
+  },
+  {
+    "order_index": 20,
+    "artifact": "AutoGen",
+    "condition": "C4",
+    "verdict": "partial",
+    "quote_or_search": "\"AutoGen has native support for open telemetry.\"; \"To disable the agent runtime telemetry, you can set the trace_provider to opentelemetry.trace.NoOpTracerProvider in the runtime constructor.\"; \"you can set the environment variable AUTOGEN_DISABLE_RUNTIME_TRACING to true to disable the agent runtime telemetry.\"",
+    "rationale": "Native OpenTelemetry runtime tracing plus run_stream message observation can reconstruct who did what, but tracing is disableable by constructor or environment variable and export requires application setup; there is no mandatory anchor query returning the delegation tree."
+  },
+  {
+    "order_index": 21,
+    "artifact": "MCP",
+    "condition": "C3",
+    "verdict": "absent",
+    "quote_or_search": "Searched the authorization spec, security best practices, and architecture pages for a required typed record of delegation events naming delegator, delegatee, goal, and scope: nothing found. Closest text is non-normative mitigation guidance under Scope Minimization: 'Log elevation events (scope requested, granted subset) with correlation IDs'.",
+    "rationale": "MCP defines no delegation-event record type at all; the only logging language is best-practice guidance about scope elevation, which neither is normative nor captures delegator/delegatee/goal."
+  },
+  {
+    "order_index": 22,
+    "artifact": "OpenAI Agents SDK",
+    "condition": "C2",
+    "verdict": "partial",
+    "quote_or_search": "\"Set `needs_approval` to `True` to always require approval or provide an async function that decides per call.\"; \"For local `ShellTool` and `ApplyPatchTool`, approval is opt-in: `needs_approval` defaults to `False`.\"",
+    "rationale": "Human-in-the-loop tool approval exists but is opt-in per tool and defaults off; the SDK never requires that a run anchor to an identified accountable person, and the approver's identity is application-managed, not a framework guarantee."
+  },
+  {
+    "order_index": 23,
+    "artifact": "A2A",
+    "condition": "C2",
+    "verdict": "absent",
+    "quote_or_search": "Searched the A2A 1.0.0 specification and enterprise-ready topic for human user identity, accountable person, consent, or end-user identity propagation: nothing found. Only 'Messages identify senders as either ROLE_USER (client to server) or ROLE_AGENT (server to client)', which marks message direction, not an accountable natural person.",
+    "rationale": "A2A authenticates the client agent, not a human principal; no provision requires chains to terminate in an identified accountable natural person, and end-user identity propagation across hops is not addressed."
+  },
+  {
+    "order_index": 24,
+    "artifact": "LangGraph",
+    "condition": "C5",
+    "verdict": "partial",
+    "quote_or_search": "\"Starting in version 1.0.6, the default recursion limit is set to 1000 steps.\"; \"Once the limit is reached, LangGraph will raise `GraphRecursionError`.\"; \"Edges determine which `Node` to execute next based on the current state.\"",
+    "rationale": "A default step limit exists and the runtime refuses to exceed it, and static graph edges constrain which nodes (delegates) are reachable; but the limit bounds total super-steps rather than delegation depth, is a per-invocation config value rather than part of a grant, and is freely raisable, so this is default-on configuration rather than a mandatory grant-carried bound."
+  },
+  {
+    "order_index": 25,
+    "artifact": "AutoGen",
+    "condition": "C3",
+    "verdict": "partial",
+    "quote_or_search": "\"Each agent has the ability to generate HandoffMessage to signal which other agents it can hand off to\"; \"the speaker agent is selected based on the most recent HandoffMessage message in the context\"; \"When the user provides input, it's sent back to the team as a HandoffMessage. This message is directed to the agent that originally requested user input\"",
+    "rationale": "Swarm delegations are typed HandoffMessage records carrying source and target and flowing through the observable message stream, which covers delegator and delegatee; but this holds only for the Swarm pattern (other teams select speakers without handoff records), no scope field exists, and persistence of the records is up to the application."
+  }
+]

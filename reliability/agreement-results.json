@@ -1,0 +1,38 @@
+{
+ "raw_agreement": "19/25",
+ "percent": 76.0,
+ "kappa": 0.423,
+ "weighted_kappa": 0.423,
+ "disagreements": [
+  {
+   "cell": "A2A-C2",
+   "original": "partial",
+   "blind": "absent"
+  },
+  {
+   "cell": "A2A-C3",
+   "original": "absent",
+   "blind": "partial"
+  },
+  {
+   "cell": "AutoGen-C1",
+   "original": "absent",
+   "blind": "partial"
+  },
+  {
+   "cell": "LangGraph-C1",
+   "original": "absent",
+   "blind": "partial"
+  },
+  {
+   "cell": "OpenAI-C1",
+   "original": "absent",
+   "blind": "partial"
+  },
+  {
+   "cell": "OpenAI-C2",
+   "original": "absent",
+   "blind": "partial"
+  }
+ ]
+}

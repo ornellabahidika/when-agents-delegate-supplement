@@ -10,6 +10,9 @@ Section VI of the article audits five widely used agent protocols and frameworks
 
 **S2-audit-evidence.json** holds the same 25 assessments as structured data. Each record names the artifact, the condition, the verdict, the supporting quotations, the source addresses, and the rationale. Use this file if you want to load the results into your own code.
 
+
+**reliability/** holds the blind second-coding study reported in the article's Limitations section: `blind_recode_verdicts.json` (the second coder's verdicts for all twenty-five cells, coded blind from the primary sources in randomized order), `blind_recode_notes.md` (method notes), `compute_agreement.py` (the agreement script), and `agreement-results.json` (raw agreement 19/25, Cohen's kappa 0.42, and the six disagreeing cells).
+
 ## How to cite
 
 Bahidika, O., "When Agents Delegate: Accountability Chains in Multi-Agent AI Systems," International Journal of Advanced Computer Science and Applications (IJACSA), 2026.
